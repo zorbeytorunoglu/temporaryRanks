@@ -1,12 +1,15 @@
 package com.zorbeytorunoglu.temporaryRanks.rank
 
 import com.zorbeytorunoglu.kLib.configuration.Resource
+import com.zorbeytorunoglu.kLib.configuration.createYamlResource
 import com.zorbeytorunoglu.kLib.extensions.numbers
+import com.zorbeytorunoglu.kLib.task.MCDispatcher
 import com.zorbeytorunoglu.kLib.task.Scopes
 import com.zorbeytorunoglu.kLib.task.suspendFunctionAsync
 import com.zorbeytorunoglu.kLib.task.suspendFunctionSync
 import com.zorbeytorunoglu.temporaryRanks.TemporaryRanks
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import org.bukkit.entity.Player
 import java.util.Calendar
 import java.util.Date
@@ -174,6 +177,68 @@ class RankManager(private val plugin: TemporaryRanks) {
                 }
             }
         }
+    }
+
+    fun loadData(resource: Resource) {
+
+        if (!resource.file.exists()) return
+
+        if (resource.getKeys(false).isEmpty()) return
+
+        Scopes.supervisorScope.launch {
+            plugin.suspendFunctionAsync {
+                for (key in resource.getKeys(false)) {
+
+                    val ranks: MutableList<PlayerRank> = mutableListOf()
+
+                    for (rankName in resource.getConfigurationSection(key).getKeys(false)) {
+
+                        if (!rankExists(rankName)) {
+                            resource.set(key, null)
+                            continue
+                        }
+
+                        val playerRank = PlayerRank(key, getRank(rankName)!!,
+                            plugin.messageContainer.dateFormat.parse(
+                                resource.getString("$key.$rankName.expire_date")
+                            ))
+
+                        ranks.add(playerRank)
+
+                    }
+
+                    tPlayers[key] = TPlayer(key, ranks)
+
+                }
+            }
+        }
+
+    }
+
+    fun saveData(resource: Resource) = runBlocking(MCDispatcher(plugin, false)) {
+
+        if (tPlayers.isEmpty()) return@runBlocking
+
+        for (key in tPlayers.keys) {
+
+            if (tPlayers[key]!!.ranks.isEmpty()) continue
+
+            for (pRank in tPlayers[key]!!.ranks) {
+
+                resource.set(pRank.uuid+"."+pRank.rank.permissionGroup+".expire_date",
+                    plugin.messageContainer.dateFormat.format(pRank.expirationDate))
+
+            }
+
+        }
+
+        resource.save()
+
+    }
+
+    fun resetDataFile(resource: Resource): Resource {
+        if (resource.file.exists()) resource.file.delete()
+        return plugin.createYamlResource("data.yml").load()
     }
 
     fun rankExists(rank: String): Boolean = ranks.containsKey(rank)

@@ -94,7 +94,7 @@ class TemporaryRanksCMD(private val plugin: TemporaryRanks): CommandExecutor {
 
                 } else {
 
-                    sender.sendMessage(messages.playerRanks)
+                    sender.sendMessage(messages.playerRanks.replace("%player%", player.name))
                     rankManager.getRanks(player).forEach {
 
                         sender.sendMessage(messages.checkRankMultiple

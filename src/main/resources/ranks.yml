@@ -1,0 +1,18 @@
+'vip':
+  permission_group: 'vip'
+  default_time: '30d'
+  give_commands:
+    - 'say &7You have &a%rank% &7now!'
+    - 'eco give %player% 1000'
+  take_commands:
+    - 'say Your temporary rank %rank% is expired!'
+    - 'eco take %player% 1000'
+'superVip':
+  permission_group: 'superVip'
+  default_time: '1d'
+  give_commands:
+    - 'say Hello, this is test'
+    - 'luckperms permission set parent %player% superVip'
+  take_commands:
+    - 'say Hi again!'
+    - 'luckperms permission set parent %player% default'

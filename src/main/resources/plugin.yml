@@ -1,0 +1,16 @@
+name: TemporaryRanks
+version: 1.0.0
+author: thelegend
+api-version: 1.13
+main: com.zorbeytorunoglu.temporaryRanks.TemporaryRanks
+depend:
+  - kLib
+commands:
+  temporaryranks:
+    description: Main command
+    aliases:
+      - tr
+permissions:
+  temporaryranks.admin:
+    description: Permission for admin commands
+    default: op
